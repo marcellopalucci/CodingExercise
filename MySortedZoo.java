@@ -2,62 +2,99 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class MySortedZoo implements SortedZoo{
-    Animal [] sortedAnimals;
+    private Animal [] animals;
+    private int size;
+    private static final int INITIAL_CAPACITY = 3;
+    public MySortedZoo() {
+        animals = new Animal[INITIAL_CAPACITY];
+        size = 0;
+    }
 
     @Override
     public int size(){
-        return sortedAnimals.length;
+        return size;
     }
     @Override
     public boolean isEmpty() {
-        return sortedAnimals.length > 0;
+        return size == 0;
     }
     @Override
     public void clear(){
-        sortedAnimals = null;
+        //two problems, i < size, and size =0
+        for(int i = 0; i < size; i++) {
+            animals[i] = null;
+        }
+        size = 0;
     }
     @Override
     public void add(Animal element) throws IllegalArgumentException {
-        if (!(element instanceof Animal)) {
-            throw new IllegalArgumentException();
+        if (element == null) {
+            throw new IllegalArgumentException("Null element can't be added to the zoo");
         }
-        int sizeInc = sortedAnimals.length + 1;
-        Animal[] temp = new Animal[sizeInc];
-        for (int i = 0; i < sortedAnimals.length; i++) {
-            temp[i] = sortedAnimals[i];
+        if (size == animals.length) {
+            expandCapacity();
         }
-        temp[sizeInc - 1] = element;
-        sortedAnimals = temp;
+        int index = findInsertionIndex(element);
+        //shift all elements to the right starting from the index
+        for(int i = size; i > index; i--) {
+            animals[i] = animals[i-1];
+        }
+        animals[index] = element;
+        size++;
+    }
+    private void expandCapacity() {
+        Animal[] temp = new Animal[animals.length * 2];
+        for(int i = 0; i < size; i++) {
+            temp[i] = animals[i];
+        }
+        temp = animals;
+    }
+    private int findInsertionIndex(Animal element) {
+        int i = 0;
+        for (i = 0; i < size; i++) {
+            if (animals[i].compareTo(element) >= 0) break;
+        }
+        return i;
     }
     @Override
     public Animal remove(Animal element) throws IllegalArgumentException, NoSuchElementException {
         if (!(element instanceof Animal)) {
             throw new IllegalArgumentException();
         }
-        int decSize = sortedAnimals.length - 1;
+        int decSize = animals.length - 1;
         Animal[] temp = new Animal[decSize];
         int j = 0;
         boolean found = false;
-        for (int i = 0; i < sortedAnimals.length; i++) {
-            if (sortedAnimals[i].equals(element)){
+        for (int i = 0; i < animals.length; i++) {
+            if (animals[i].equals(element)){
                 found = true;
             } else {
-                temp[j++] = sortedAnimals[i];
+                temp[j++] = animals[i];
             }
         }
-        sortedAnimals = temp;
+        animals = temp;
         if(found) return element;
         throw new NoSuchElementException();
     }
     @Override
     public int findFirstOccurrenceIndex(Animal element) {
-        for (int i = 0; i < sortedAnimals.length; i++) {
-            if (sortedAnimals[i].equals(element)) return i;
+        for (int i = 0; i < animals.length; i++) {
+            if (animals[i].equals(element)) return i;
         }
         throw new NoSuchElementException();
     }
     @Override
     public Iterator<Animal> iterator() {
-        return new ZooIterator<Animal>(this);
+        return new MySortedZooIterator();
+    }
+    private class MySortedZooIterator implements Iterator<Animal> {
+        private int position = 0;
+        public boolean hasNext(){
+            return position <= size;
+        }
+        public Animal next() {
+            if (!hasNext()) throw new NoSuchElementException("No more animals in the zoo");
+            return animals[position++];
+        }
     }
 }

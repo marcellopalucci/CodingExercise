@@ -9,7 +9,7 @@ public interface SortedZoo extends Iterable<Animal> {
     Animal remove(Animal element) throws IllegalArgumentException, NoSuchElementException;
     int findFirstOccurrenceIndex(Animal element);
     Iterator<Animal> iterator();
-
-
+    //extends iterable to use the foreach loop, doesn't need to implement because it extends the class
+    //it's not an interface. which requires to use the method
 
 }
